@@ -1,0 +1,1318 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<title>Padel Tactics</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#131a2a; --line:#e6edf7; --text:#f5f7fb; --muted:#9fb0c7;
+    --accent:#72e6a6; --red:#ff6b6b; --yellow:#ffd166; --blue:#5cc8ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#080d19,#0e1526);color:var(--text)}
+  .app{max-width:1320px;margin:auto;padding:18px}
+  .topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
+  .title{font-size:22px;font-weight:800}.sub{font-size:12px;color:var(--muted);margin-top:4px}
+  .pill{background:#202b42;border:1px solid #30405f;border-radius:999px;padding:9px 13px;font-size:12px;color:#cdd7e6}
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px}
+  .card{background:rgba(19,26,42,.96);border:1px solid #25314b;border-radius:20px;overflow:hidden;box-shadow:0 16px 36px rgba(0,0,0,.24)}
+  .courtWrap{padding:12px}.controls{padding:14px;display:flex;flex-direction:column;gap:10px}
+  canvas{width:100%;height:auto;display:block;border-radius:16px;background:#132b56;touch-action:none;-webkit-user-select:none;user-select:none}
+  @media (pointer:coarse){
+    button,select{min-height:46px;padding:11px 13px;font-size:15px}
+    .row{gap:10px}
+    .tips{font-size:13px}
+  }
+  h3{font-size:13px;margin:4px 0 10px;color:#dbe6f3}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  button,select,input[type=range]{font:inherit}
+  button,select{
+    background:linear-gradient(180deg,#202b42,#1a2338);
+    color:#fff;border:1px solid #344362;border-radius:14px;padding:11px 12px;
+    min-height:46px;
+  }
+  button{
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(0,0,0,.18);
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  button:hover, select:hover{border-color:#4c6186}
+  button:active{transform:translateY(1px)}
+  button.primary{background:linear-gradient(180deg,#389167,#2f7d59);border-color:#48a377}
+  button.warn{background:linear-gradient(180deg,#8f4444,#7a3434);border-color:#b15a5a}
+  button.active{outline:2px solid #72e6a6}
+  .tips{margin-top:10px;padding:10px;border-radius:12px;background:#0f1728;border:1px solid #23304a;font-size:12px;line-height:1.55;color:#c9d5e6}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .legend div{font-size:11px;color:#b9c7d9;background:#182135;padding:8px;border-radius:10px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+  .stat{display:grid;grid-template-columns:1fr auto;gap:6px;font-size:12px;margin:6px 0}
+  .stat b{color:#fff}
+  .badge{display:inline-block;padding:3px 7px;border-radius:999px;background:#182135;border:1px solid #2b3955;color:#d9e5f4;font-size:11px;margin:3px 4px 0 0}
+  .footer{margin-top:12px;color:#8495ad;font-size:11px;text-align:center}
+  .small{font-size:11px;color:#91a4bf}
+
+  .aiPanel{margin-top:14px;padding:12px;border-radius:14px;background:linear-gradient(180deg,#111b2e,#0d1627);border:1px solid #31415f}
+  .aiTitle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .aiTitle b{font-size:13px}.aiTag{font-size:10px;padding:4px 7px;border-radius:999px;background:#263653;color:#cfe0f4}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0}
+  .seg button{width:100%}.seg button.active{background:#2f7d59;border-color:#4caf7d;outline:2px solid #72e6a6}
+  .aiStatus{margin-top:9px;padding:10px;border-radius:10px;background:#09111f;border:1px solid #263650;font-size:12px;line-height:1.45;color:#d1dbea}
+  .aiStatus strong{color:#fff}.scoreBox{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px;font-size:12px}
+  .coachNote{font-size:11px;color:#91a4bf;margin-top:7px;line-height:1.45}
+  .toolbarRow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .toolbarRow button{width:100%}
+  .presetRow{display:grid;grid-template-columns:1fr 130px;gap:10px;align-items:center}
+  .presetRow select,.presetRow button{width:100%}
+  .aiPanel{margin-top:2px;padding:14px;border-radius:16px;background:linear-gradient(180deg,#111b2e,#0d1627);border:1px solid #31415f}
+  .aiSelectRow, .aiActionRow{display:grid;grid-template-columns:1fr;gap:10px}
+  .aiActionRow{grid-template-columns:1fr 1fr}
+  .styleGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+  .styleBtn{font-size:13px;font-weight:750;min-height:42px;padding:9px 8px;color:#dce7f7;background:#172238}
+  .styleBtn.active{background:linear-gradient(180deg,#385d92,#294b7b);border-color:#6f98cf;outline:2px solid rgba(114,230,166,.8);color:#fff}
+  select{color-scheme:dark;background-color:#1b263b!important;color:#fff!important;font-weight:650}
+  select option{background:#172136;color:#fff}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:8px 0 10px}
+  .scoreBox{padding:8px 10px;border-radius:12px;background:#10192c;border:1px solid #24334d}
+  #selection.tips{margin-top:0}
+  @media(max-width:950px){
+    .toolbarRow{grid-template-columns:1fr}
+    .presetRow{grid-template-columns:1fr}
+    .aiActionRow{grid-template-columns:1fr}
+  }
+  .pointFlash{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:14px 22px;border-radius:16px;background:rgba(9,17,31,.92);border:1px solid #506381;color:#fff;font-weight:800;font-size:20px;pointer-events:none;opacity:0;transition:opacity .2s}
+  .courtWrap{position:relative}
+  .autoHint{font-size:11px;color:#72e6a6}
+  @media(max-width:950px){.grid{grid-template-columns:1fr}}
+</style>
+
+<meta name="theme-color" content="#0b1020"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Padel Tactics"/>
+
+<style>
+.jp-back-btn{
+  position:fixed;top:10px;left:10px;z-index:9999;
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:12px;
+  background:rgba(8,19,31,.94);color:#fff;
+  border:1px solid rgba(255,255,255,.18);
+  text-decoration:none;font:700 13px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  box-shadow:0 10px 28px rgba(0,0,0,.28)
+}
+.jp-back-btn:hover{background:#13283f}
+@media(max-width:700px){.jp-back-btn{top:7px;left:7px;padding:9px 12px;font-size:12px}}
+</style>
+
+</head>
+<body>
+<a class="jp-back-btn" href="./index.html">← Back to JPPC</a>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="title">Padel Tactics Board</div>
+      <div class="sub">Taktik padel interaktif + AI Auto Coach: simulasi rally defend/attack; biru dan merah sama-sama mengejar bola sampai point selesai.</div>
+    </div>
+    <div class="pill">PWA Auto Control v1.6</div>
+  </div>
+
+  <div class="grid">
+    <div class="card courtWrap">
+      <canvas id="court" width="1280" height="760"></canvas>
+      <div id="pointFlash" class="pointFlash">POINT</div>
+    </div>
+
+    <div class="card controls">
+      <h3>Kontrol Taktik</h3>
+<div class="row" style="display:none" aria-hidden="true">
+        <button id="selectBtn" class="active">Pilih / Geser</button>
+        <button id="moveBtn">Arah Gerak</button>
+        <button id="shotBtn">Arah Pukulan</button>
+      </div>
+
+      <h3>Kontrol</h3>
+      <div class="row toolbarRow">
+        <button id="playBtn" class="primary">▶ Play</button>
+        <button id="resetBtn">↺ Reset</button>
+        <button id="clearBtn" class="warn">Hapus Panah</button>
+      </div>
+
+      <div><span class="badge">Pantulan kaca otomatis</span><span class="badge">Sudut datang = sudut pantul</span></div>
+
+      <div style="margin-top:10px;font-size:12px;color:#cbd6e5">Kecepatan animasi <span id="speedText" style="float:right">1.0×</span></div>
+      <input id="speed" type="range" min="0.4" max="2.4" step="0.1" value="1"/>
+
+      <h3 style="margin-top:10px">Preset Taktik</h3>
+      <div class="row presetRow">
+        <select id="preset">
+          <option value="defense">Defense → Lob → Ambil Net</option>
+          <option value="attack">Net Pressure</option>
+          <option value="bajada">Bajada + Glass Rebound</option>
+          <option value="chiquita">Chiquita → Masuk Net</option>
+        </select>
+        <button id="applyPreset">Terapkan</button>
+      </div>
+
+      <div class="aiPanel">
+        <div class="aiTitle"><b>🤖 AI Auto Coach</b><span class="aiTag">1 point = 1 rally</span></div>
+        <select id="aiStyle" aria-hidden="true" tabindex="-1" style="display:none">
+          <option value="tapia">Tapia-inspired</option>
+          <option value="galan">Ale Galán-inspired</option>
+          <option value="chingotto">Chingotto-inspired</option>
+          <option value="balanced">Balanced Pro</option>
+        </select>
+        <div class="styleGrid">
+          <button type="button" class="styleBtn active" data-style="tapia">Tapia</button>
+          <button type="button" class="styleBtn" data-style="galan">Galán</button>
+          <button type="button" class="styleBtn" data-style="chingotto">Chingotto</button>
+          <button type="button" class="styleBtn" data-style="balanced">Balanced</button>
+        </div>
+        <div class="seg">
+          <button id="aiDefendBtn" class="active">🛡 DEFEND</button>
+          <button id="aiAttackBtn">⚡ ATTACK</button>
+        </div>
+        <div class="row aiActionRow">
+          <button id="aiPointBtn" class="primary">▶ AI Mainkan 1 Rally</button>
+          <button id="aiNextBtn">↻ Taktik Baru</button>
+        </div>
+        <div id="aiStatus" class="aiStatus"><strong>Siap.</strong> Pilih style dan mode, lalu jalankan 1 point rally.</div>
+        <div class="scoreBox"><span>Point simulasi</span><b id="aiPointCount">0</b></div>
+        <div class="scoreBox"><span>Score Biru</span><b id="blueScore">0</b></div>
+        <div class="scoreBox"><span>Score Merah</span><b id="redScore">0</b></div>
+</div>
+
+      <h3 style="margin-top:10px">Objek Aktif</h3>
+      <div id="selection" class="tips">Klik pemain atau bola di lapangan.</div>
+
+      <div class="legend">
+        <div><span class="dot" style="background:#5cc8ff"></span>Tim Biru</div>
+        <div><span class="dot" style="background:#ff6b6b"></span>Tim Merah</div>
+        <div><span class="dot" style="background:#ffd166"></span>Lintasan Bola</div>
+        <div><span class="dot" style="background:#72e6a6"></span>Arah Gerak</div>
+      </div>
+<div class="footer">Visual court mengikuti contoh sebelumnya, dengan perhitungan pantul otomatis pada dinding luar.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('court');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// Court follows the landscape example: 20m horizontal, 10m vertical
+const courtMarginX = 90;
+const courtW = W - courtMarginX * 2;
+const courtH = courtW / 2;
+const courtX = courtMarginX;
+const courtY = (H - courtH) / 2;
+const pxPerM = courtW / 20;
+const netX = courtX + courtW / 2;
+const leftServiceX = courtX + 3 * pxPerM;
+const rightServiceX = courtX + courtW - 3 * pxPerM;
+const centerServiceY = courtY + courtH / 2;
+const playerR = 28, ballR = 12;
+const EPS = 0.001;
+
+let mode='select', selected=null, dragging=false, playing=false, speed=1, tPrev=0;
+let touchStartObject=null, gestureStart=null;
+let interactionType=null; // move-object | edit-player-path | edit-ball-path | edit-ball-next-path | tap
+let editingPlayer=null;
+let pointerMoved=false;
+let ballContinuationArmed=false;
+let manualBallPhase='main';
+const TAP_THRESHOLD=14;
+const HANDLE_HIT_RADIUS=38;
+const PLAYER_RECEIVE_RADIUS=56;
+
+
+function mToX(m){ return courtX + m * pxPerM; }
+function mToY(m){ return courtY + courtH - m * pxPerM; }
+function xToM(x){ return (x - courtX) / pxPerM; }
+function yToM(y){ return (courtY + courtH - y) / pxPerM; }
+function withinCourt(x,y){ return x>=courtX && x<=courtX+courtW && y>=courtY && y<=courtY+courtH; }
+function angleDeg(a,b){ let d=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI; return (d+360)%360; }
+function distPx(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+const initial = () => ({
+  players:[
+    {id:'B1',team:'blue',x:mToX(3.0), y:mToY(2.3), path:[]},
+    {id:'B2',team:'blue',x:mToX(3.0), y:mToY(7.7), path:[]},
+    {id:'R1',team:'red', x:mToX(17.0), y:mToY(2.3), path:[]},
+    {id:'R2',team:'red', x:mToX(17.0), y:mToY(7.7), path:[]},
+  ],
+  ball:{id:'BALL',x:mToX(6.0),y:mToY(5.0),path:[],bounceInfo:[],nextPath:[],nextBounceInfo:[],landingPoint:null}
+});
+let state = initial();
+
+function reset(){
+  state = initial();
+  manualBallPhase='main';
+  selected = null;
+  playing = false;
+  aiRunning = false;
+  aiRally = null;
+  if(aiResetTimer){ clearTimeout(aiResetTimer); aiResetTimer=null; }
+  document.getElementById('playBtn').textContent = '▶ Play';
+  const btn=document.getElementById('aiPointBtn');
+  if(btn) btn.textContent='▶ AI Mainkan 1 Rally';
+  draw(); updateSelection();
+}
+
+function drawArrow(a,b,color,width=7,dash=[]){
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=width; ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  const ang=Math.atan2(b.y-a.y,b.x-a.x), len=28;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(b.x,b.y);
+  ctx.lineTo(b.x-len*Math.cos(ang-Math.PI/6), b.y-len*Math.sin(ang-Math.PI/6));
+  ctx.lineTo(b.x-len*Math.cos(ang+Math.PI/6), b.y-len*Math.sin(ang+Math.PI/6));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawCourt(){
+  ctx.clearRect(0,0,W,H);
+  // Always reset canvas drawing state so court lines never inherit dashed arrows.
+  ctx.setLineDash([]);
+  ctx.globalAlpha=1;
+  ctx.lineCap='butt';
+  ctx.lineJoin='miter';
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#4b95d8'); bg.addColorStop(1,'#2a6eb9');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(255,255,255,.05)';
+  ctx.beginPath(); ctx.moveTo(W*0.55,0); ctx.lineTo(W,0); ctx.lineTo(W*0.85,H*0.45); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(W*0.85,0); ctx.lineTo(W,0); ctx.lineTo(W,H*0.6); ctx.closePath(); ctx.fill();
+
+  ctx.strokeStyle='rgba(255,255,255,.98)';
+  ctx.lineWidth=5;
+  ctx.strokeRect(courtX, courtY, courtW, courtH);
+
+  // side service lines
+  ctx.beginPath();
+  ctx.moveTo(leftServiceX, courtY); ctx.lineTo(leftServiceX, courtY + courtH);
+  ctx.moveTo(rightServiceX, courtY); ctx.lineTo(rightServiceX, courtY + courtH);
+  ctx.stroke();
+
+  // net
+  ctx.beginPath();
+  ctx.moveTo(netX, courtY); ctx.lineTo(netX, courtY + courtH);
+  ctx.stroke();
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(netX+7, courtY); ctx.lineTo(netX+7, courtY + courtH);
+  ctx.stroke();
+
+  // center service line
+  ctx.lineWidth=5;
+  ctx.beginPath();
+  ctx.moveTo(leftServiceX, centerServiceY); ctx.lineTo(rightServiceX, centerServiceY);
+  ctx.stroke();
+
+  // Dimension annotations intentionally hidden for cleaner tactical view.
+}
+
+function drawDimArrow(x1,y1,x2,y2,label){
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  drawSmallArrow(x1,y1,x1+15,y1); drawSmallArrow(x2,y2,x2-15,y2);
+  ctx.fillText(label, (x1+x2)/2, y1-8);
+}
+function drawDimArrowVertical(x1,y1,x2,y2,label){
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  drawSmallArrow(x1,y1,x1,y1+15); drawSmallArrow(x2,y2,x2,y2-15);
+  const parts = label.split('\n');
+  if(parts.length===2){
+    ctx.fillText(parts[0], x1+55, (y1+y2)/2 - 8);
+    ctx.fillText(parts[1], x1+55, (y1+y2)/2 + 16);
+  } else ctx.fillText(label, x1+45, (y1+y2)/2);
+}
+function drawSmallArrow(x1,y1,x2,y2){
+  const ang=Math.atan2(y2-y1,x2-x1), len=10;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x1+len*Math.cos(ang+Math.PI/6), y1+len*Math.sin(ang+Math.PI/6));
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x1+len*Math.cos(ang-Math.PI/6), y1+len*Math.sin(ang-Math.PI/6));
+  ctx.stroke();
+}
+
+function drawPlayer(p){
+  const col = p.team==='blue' ? '#5cc8ff' : '#ff6b6b';
+  ctx.save();
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.arc(p.x,p.y,playerR,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#0b1020'; ctx.beginPath(); ctx.arc(p.x,p.y,7,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font='bold 14px system-ui'; ctx.textAlign='center';
+  ctx.fillText(p.id, p.x, p.y + 38);
+  if(selected===p){ ctx.strokeStyle='#fff'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(p.x,p.y,playerR+8,0,Math.PI*2); ctx.stroke(); }
+  ctx.restore();
+}
+function drawBall(){
+  const b = state.ball;
+  ctx.save();
+  ctx.fillStyle='#ffd166'; ctx.beginPath(); ctx.arc(b.x,b.y,ballR,0,Math.PI*2); ctx.fill();
+  if(selected===b){ ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(b.x,b.y,ballR+8,0,Math.PI*2); ctx.stroke(); }
+  ctx.restore();
+}
+
+
+function getBallMainEnd(){
+  if(!state.ball.path.length) return null;
+  return state.ball.path[state.ball.path.length-1];
+}
+function getBallReceiverPlayer(){
+  const end = getBallMainEnd();
+  if(!end) return null;
+  let best=null, bestD=Infinity;
+  for(const p of state.players){
+    const d=Math.hypot(p.x-end.x,p.y-end.y);
+    if(d<bestD){ best=p; bestD=d; }
+  }
+  return bestD<=PLAYER_RECEIVE_RADIUS ? best : null;
+}
+function getBallContinuationStart(){
+  const end=getBallMainEnd();
+  if(!end) return null;
+  const receiver=getBallReceiverPlayer();
+  if(receiver) return {x:receiver.x, y:receiver.y};
+  return {x:end.x, y:end.y};
+}
+
+function drawPaths(){
+  for(const p of state.players){
+    let a={x:p.x,y:p.y};
+    for(const q of p.path){ drawArrow(a,q,'#72e6a6',5,[10,8]); a=q; }
+  }
+
+  let a={x:state.ball.x,y:state.ball.y};
+  for(const q of state.ball.path){ drawArrow(a,q,'#ffd166',6,[]); a=q; }
+
+  // draw bounce markers and labels for the first ball trajectory
+  for(const info of state.ball.bounceInfo || []){
+    ctx.save();
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(info.point.x, info.point.y, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#0b1020'; ctx.beginPath(); ctx.arc(info.point.x, info.point.y, 3, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.font='bold 14px system-ui';
+    const label = 'θ ' + info.incident.toFixed(0) + '°';
+    ctx.fillText(label, info.point.x + 28, info.point.y - 12);
+    ctx.font='12px system-ui';
+    ctx.fillText('Pantul ' + info.wallLabel, info.point.x + 40, info.point.y + 8);
+    ctx.restore();
+  }
+
+  if(state.ball.path.length){
+    const q=state.ball.path[0];
+    ctx.save(); ctx.fillStyle='#fff'; ctx.font='bold 18px system-ui';
+    ctx.fillText(angleDeg(state.ball,q).toFixed(0)+'°', (state.ball.x+q.x)/2, (state.ball.y+q.y)/2 - 14);
+    ctx.restore();
+
+    const end=state.ball.path[state.ball.path.length-1];
+    const receiver=getBallReceiverPlayer();
+
+    // main end handle (also used to start continuation if the ball reaches a player)
+    ctx.save();
+    ctx.fillStyle = receiver ? '#ffdd78' : '#ffd166';
+    ctx.strokeStyle='#ffffff';
+    ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(end.x,end.y,13,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    if(receiver){
+      ctx.fillStyle='#0b1020';
+      ctx.font='bold 12px system-ui';
+      ctx.textAlign='center';
+      ctx.fillText('+', end.x, end.y+4);
+    }
+    ctx.restore();
+  }
+
+  // draw manual continuation after the ball reaches a player
+  if(state.ball.nextPath && state.ball.nextPath.length){
+    let s = getBallContinuationStart();
+    for(const q of state.ball.nextPath){
+      drawArrow(s,q,'#ffd166',6,[10,7]);
+      s=q;
+    }
+
+    for(const info of state.ball.nextBounceInfo || []){
+      ctx.save();
+      ctx.fillStyle='#fff';
+      ctx.beginPath(); ctx.arc(info.point.x, info.point.y, 6, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='#0b1020'; ctx.beginPath(); ctx.arc(info.point.x, info.point.y, 2.5, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+
+    const end2=state.ball.nextPath[state.ball.nextPath.length-1];
+    ctx.save();
+    ctx.fillStyle='#ffd166';
+    ctx.strokeStyle='#ffffff';
+    ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(end2.x,end2.y,13,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Final landing marker stays visible when Play finishes.
+  if(state.ball.landingPoint){
+    const lp=state.ball.landingPoint;
+    ctx.save();
+    ctx.strokeStyle='#ffd166';
+    ctx.fillStyle='rgba(255,209,102,.18)';
+    ctx.lineWidth=4;
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(lp.x,lp.y,20,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(lp.x-27,lp.y); ctx.lineTo(lp.x+27,lp.y);
+    ctx.moveTo(lp.x,lp.y-27); ctx.lineTo(lp.x,lp.y+27);
+    ctx.stroke();
+    ctx.fillStyle='#fff';
+    ctx.font='bold 12px system-ui';
+    ctx.textAlign='center';
+    ctx.fillText('JATUH',lp.x,lp.y-30);
+    ctx.restore();
+  }
+
+  // Large draggable handles for player movement arrows.
+  for(const p of state.players){
+    if(!p.path.length) continue;
+    const end=p.path[p.path.length-1];
+    ctx.save();
+    ctx.fillStyle='#72e6a6';
+    ctx.strokeStyle='#ffffff';
+    ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(end.x,end.y,13,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function draw(){ drawCourt(); drawPaths(); state.players.forEach(drawPlayer); drawBall(); }
+
+function hit(x,y){
+  const objs=[...state.players,state.ball];
+  for(const o of objs) if(Math.hypot(o.x-x,o.y-y) < (o===state.ball?34:48)) return o;
+  return null;
+}
+function pos(evt){
+  const r = canvas.getBoundingClientRect();
+  return {x:(evt.clientX-r.left)*W/r.width, y:(evt.clientY-r.top)*H/r.height};
+}
+
+function buildBallReboundPath(start, target, maxBounces=3){
+  const dx0 = target.x - start.x;
+  const dy0 = target.y - start.y;
+  let totalLen = Math.hypot(dx0, dy0);
+  if(totalLen < 1) return {path:[], bounceInfo:[]};
+
+  let dirx = dx0 / totalLen;
+  let diry = dy0 / totalLen;
+  let current = {x:start.x, y:start.y};
+  const points = [];
+  const bounceInfo = [];
+
+  for(let i=0; i<=maxBounces; i++){
+    let tx = Infinity, ty = Infinity, hitWallX = null, hitWallY = null;
+
+    if(dirx > EPS){ tx = (courtX + courtW - current.x) / dirx; hitWallX = 'right'; }
+    else if(dirx < -EPS){ tx = (courtX - current.x) / dirx; hitWallX = 'left'; }
+
+    if(diry > EPS){ ty = (courtY + courtH - current.y) / diry; hitWallY = 'bottom'; }
+    else if(diry < -EPS){ ty = (courtY - current.y) / diry; hitWallY = 'top'; }
+
+    let tHit = Math.min(tx, ty);
+    if(!isFinite(tHit) || totalLen <= tHit){
+      points.push({x:current.x + dirx * totalLen, y:current.y + diry * totalLen});
+      return {path:points, bounceInfo};
+    }
+
+    const wall = (tx < ty) ? hitWallX : hitWallY;
+    const point = {x:current.x + dirx * tHit, y:current.y + diry * tHit};
+    points.push(point);
+
+    let incident;
+    if(wall === 'left' || wall === 'right') incident = Math.atan2(Math.abs(diry), Math.abs(dirx)) * 180 / Math.PI;
+    else incident = Math.atan2(Math.abs(dirx), Math.abs(diry)) * 180 / Math.PI;
+
+    bounceInfo.push({
+      wall,
+      wallLabel: wall==='left' ? 'kaca kiri' : wall==='right' ? 'kaca kanan' : wall==='top' ? 'kaca atas' : 'kaca bawah',
+      point,
+      incident,
+      rebound: incident
+    });
+
+    totalLen -= tHit;
+
+    // Make the yellow rebound direction easier to read, especially on mobile.
+    // After the first glass contact, always show at least ~5m of reflected trajectory.
+    if(bounceInfo.length === 1){
+      totalLen = Math.max(totalLen, 5 * pxPerM);
+    }
+
+    if(wall === 'left' || wall === 'right') dirx *= -1;
+    else diry *= -1;
+
+    current = {x:point.x + dirx * EPS, y:point.y + diry * EPS};
+  }
+
+  // finish remaining after max bounce limit
+  points.push({
+    x:clamp(current.x + dirx * totalLen, courtX, courtX + courtW),
+    y:clamp(current.y + diry * totalLen, courtY, courtY + courtH)
+  });
+  return {path:points, bounceInfo};
+}
+
+
+function hitPlayerPathHandle(x,y){
+  for(const p of state.players){
+    if(!p.path.length) continue;
+    const end=p.path[p.path.length-1];
+    if(Math.hypot(end.x-x,end.y-y)<=HANDLE_HIT_RADIUS) return p;
+  }
+  return null;
+}
+function hitBallPathHandle(x,y){
+  if(state.ball.nextPath && state.ball.nextPath.length){
+    const end2=state.ball.nextPath[state.ball.nextPath.length-1];
+    if(Math.hypot(end2.x-x,end2.y-y)<=HANDLE_HIT_RADIUS) return 'next';
+  }
+  if(!state.ball.path.length) return null;
+  const end=state.ball.path[state.ball.path.length-1];
+  if(Math.hypot(end.x-x,end.y-y)<=HANDLE_HIT_RADIUS) return 'main';
+  return null;
+}
+function setPlayerDirection(player, point){
+  const q={x:clamp(point.x,courtX,courtX+courtW),y:clamp(point.y,courtY,courtY+courtH)};
+  player.path=[q];
+  selected=player;
+}
+function setBallDirection(point){
+  manualBallPhase='main';
+  state.ball.landingPoint=null;
+  const shot=buildBallReboundPath({x:state.ball.x,y:state.ball.y}, point, 3);
+  state.ball.path=shot.path;
+  state.ball.bounceInfo=shot.bounceInfo;
+  state.ball.nextPath=[];
+  state.ball.nextBounceInfo=[];
+  ballContinuationArmed=false;
+  selected=state.ball;
+}
+function setBallContinuation(point){
+  state.ball.landingPoint=null;
+  const start = getBallContinuationStart();
+  if(!start) return;
+  const shot=buildBallReboundPath(start, point, 3);
+  state.ball.nextPath=shot.path;
+  state.ball.nextBounceInfo=shot.bounceInfo;
+  ballContinuationArmed=false;
+  selected=state.ball;
+}
+
+canvas.addEventListener('pointerdown', e=>{
+  e.preventDefault();
+  const p=pos(e);
+  const objectHit=hit(p.x,p.y);
+  const playerHandle=hitPlayerPathHandle(p.x,p.y);
+  const ballHandle=hitBallPathHandle(p.x,p.y);
+
+  gestureStart=p;
+  pointerMoved=false;
+  touchStartObject=objectHit;
+  interactionType='tap';
+  editingPlayer=null;
+  try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
+
+  // Handles have priority, so every existing direction can be edited by dragging.
+  if(ballHandle==='next'){
+    selected=state.ball;
+    interactionType='edit-ball-next-path';
+    dragging=true;
+    updateSelection(); draw();
+    return;
+  }
+  if(ballHandle==='main'){
+    selected=state.ball;
+    interactionType=getBallReceiverPlayer() ? 'arm-or-edit-ball-next' : 'edit-ball-path';
+    dragging=true;
+    updateSelection(); draw();
+    return;
+  }
+  if(playerHandle){
+    selected=playerHandle;
+    editingPlayer=playerHandle;
+    interactionType='edit-player-path';
+    dragging=true;
+    updateSelection(); draw();
+    return;
+  }
+
+  if(objectHit){
+    selected=objectHit;
+    interactionType='move-object';
+    dragging=true;
+    ballContinuationArmed=false;
+    updateSelection(); draw();
+    return;
+  }
+
+  // Empty court: if an object is already selected, a simple tap defines its direction.
+  if(selected && withinCourt(p.x,p.y)){
+    interactionType='tap-direction';
+  }
+});
+
+canvas.addEventListener('pointermove', e=>{
+  if(!gestureStart) return;
+  e.preventDefault();
+  const p=pos(e);
+  if(Math.hypot(p.x-gestureStart.x,p.y-gestureStart.y)>TAP_THRESHOLD) pointerMoved=true;
+
+  if(interactionType==='move-object' && dragging && touchStartObject && pointerMoved){
+    const q={
+      x:clamp(p.x,courtX,courtX+courtW),
+      y:clamp(p.y,courtY,courtY+courtH)
+    };
+    touchStartObject.x=q.x;
+    touchStartObject.y=q.y;
+    if(touchStartObject===state.ball){
+      state.ball.nextPath=[];
+      state.ball.nextBounceInfo=[];
+      ballContinuationArmed=false;
+    }
+    draw(); updateSelection();
+  } else if(interactionType==='edit-player-path' && editingPlayer){
+    setPlayerDirection(editingPlayer,p);
+    draw(); updateSelection();
+  } else if(interactionType==='edit-ball-path'){
+    setBallDirection(p);
+    draw(); updateSelection();
+  } else if(interactionType==='edit-ball-next-path' || interactionType==='arm-or-edit-ball-next'){
+    setBallContinuation(p);
+    draw(); updateSelection();
+  }
+});
+
+function endPointer(e){
+  const p=pos(e);
+
+  if(!pointerMoved){
+    if(touchStartObject){
+      selected=touchStartObject;
+    } else if(interactionType==='tap-direction' && selected){
+      if(selected===state.ball){
+        if(ballContinuationArmed && getBallContinuationStart()) setBallContinuation(p);
+        else setBallDirection(p);
+      } else setPlayerDirection(selected,p);
+    } else if(interactionType==='arm-or-edit-ball-next'){
+      // Tap the yellow endpoint once to arm the continuation, then tap court to set return direction.
+      ballContinuationArmed = !!getBallContinuationStart();
+      selected = state.ball;
+    }
+    draw(); updateSelection();
+  } else if(interactionType==='move-object' && touchStartObject){
+    selected=touchStartObject;
+    draw(); updateSelection();
+  }
+
+  dragging=false;
+  gestureStart=null;
+  touchStartObject=null;
+  interactionType=null;
+  editingPlayer=null;
+  pointerMoved=false;
+  try{ canvas.releasePointerCapture(e.pointerId); }catch(_){}
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+
+// Legacy mode API kept internally for compatibility, but UI is now Auto Detect.
+function setMode(m){ mode=m; }
+document.getElementById('selectBtn').onclick=()=>setMode('select');
+document.getElementById('moveBtn').onclick=()=>setMode('move');
+document.getElementById('shotBtn').onclick=()=>setMode('shot');
+document.getElementById('resetBtn').onclick=reset;
+document.getElementById('clearBtn').onclick=()=>{
+  state.players.forEach(p=>p.path=[]);
+  state.ball.path=[];
+  state.ball.bounceInfo=[];
+  state.ball.nextPath=[];
+  state.ball.nextBounceInfo=[];
+  state.ball.nextPath=[];
+  state.ball.nextBounceInfo=[];
+  draw(); updateSelection();
+};
+document.getElementById('speed').oninput=e=>{ speed=+e.target.value; document.getElementById('speedText').textContent=speed.toFixed(1)+'×'; };
+
+function updateSelection(){
+  const box=document.getElementById('selection');
+  if(!selected){ box.innerHTML='Tap pemain atau bola untuk memilih.'; return; }
+  const mx=xToM(selected.x), my=yToM(selected.y);
+  let html = `<div class="stat"><span>Objek</span><b>${selected.id}</b></div>
+              <div class="stat"><span>Posisi</span><b>${mx.toFixed(1)} m × ${my.toFixed(1)} m</b></div>`;
+  if(selected.path && selected.path[0]){
+    const q=selected.path[0];
+    html += `<div class="stat"><span>Arah awal</span><b>${angleDeg(selected,q).toFixed(0)}°</b></div>
+             <div class="stat"><span>Jarak segmen 1</span><b>${(distPx(selected,q)/pxPerM).toFixed(1)} m</b></div>`;
+  }
+  if(selected===state.ball && state.ball.bounceInfo && state.ball.bounceInfo.length){
+    html += `<div class="stat"><span>Jumlah pantulan</span><b>${state.ball.bounceInfo.length}</b></div>`;
+    state.ball.bounceInfo.forEach((b,i)=>{
+      html += `<div class="stat"><span>Pantulan ${i+1}</span><b>${b.wallLabel}</b></div>
+               <div class="stat"><span>Sudut datang/pantul</span><b>${b.incident.toFixed(0)}° / ${b.rebound.toFixed(0)}°</b></div>`;
+    });
+  }
+  if(selected===state.ball && getBallReceiverPlayer()){
+    const rp=getBallReceiverPlayer();
+    html += `<div class="stat"><span>Bola mengenai</span><b>${rp.id}</b></div>`;
+    html += `<div class="stat"><span>Arah lanjutan</span><b>${state.ball.nextPath && state.ball.nextPath.length ? 'sudah diatur' : (ballContinuationArmed ? 'siap diarahkan' : 'bisa diarahkan manual')}</b></div>`;
+  }
+  box.innerHTML = html;
+}
+
+
+
+function clearMotion(){
+  state.players.forEach(p=>p.path=[]);
+  state.ball.path=[];
+  state.ball.bounceInfo=[];
+  state.ball.nextPath=[];
+  state.ball.nextBounceInfo=[];
+  ballContinuationArmed=false;
+}
+
+function setAiMode(m){
+  aiMode=m;
+  document.getElementById('aiDefendBtn').classList.toggle('active',m==='defend');
+  document.getElementById('aiAttackBtn').classList.toggle('active',m==='attack');
+  updateAiStatus();
+}
+
+function styleLabel(s){
+  return s==='tapia'?'Tapia-inspired':s==='galan'?'Ale Galán-inspired':s==='chingotto'?'Chingotto-inspired':'Balanced Pro';
+}
+
+let aiMode='defend', aiPointCount=0, aiRunning=false, aiResetTimer=null, aiLastPlan=null;
+let aiRally=null, aiPreparedSeed=null;
+let aiMatchScore={blue:0, red:0};
+
+const AI_SEEDS = {
+  tapia:{
+    defend:[
+      {name:'Tapia Defend • Lob Cross', note:'Mulai dari bertahan lalu counter agresif setelah lob.', setup:[[2.1,2.4],[2.1,7.6],[13.8,2.7],[13.8,7.3],[2.6,3.2]]},
+      {name:'Tapia Defend • Glass Escape', note:'Counter dari belakang setelah membaca kaca.', setup:[[1.5,2.0],[2.5,7.8],[14.0,2.8],[14.0,7.2],[1.4,2.1]]}
+    ],
+    attack:[
+      {name:'Tapia Attack • Fast Net', note:'Mulai di depan lalu cari angle dan pace.', setup:[[8.4,2.6],[8.4,7.4],[16.8,2.7],[16.8,7.3],[8.8,4.7]]},
+      {name:'Tapia Attack • Open Angle', note:'Tekan cepat, buka sudut, lalu cari winner.', setup:[[8.7,3.0],[8.7,7.0],[16.3,2.7],[16.3,7.3],[8.9,5.0]]}
+    ]
+  },
+  galan:{
+    defend:[
+      {name:'Galán Defend • Deep Reset', note:'Pertahanan dalam, lalu transisi kuat ke net.', setup:[[2.0,2.5],[2.0,7.5],[13.8,2.8],[13.8,7.2],[2.5,6.7]]},
+      {name:'Galán Defend • Back Glass', note:'Gunakan waktu dari back glass sebelum menyerang.', setup:[[1.5,2.2],[2.3,7.8],[14.0,2.6],[14.0,7.4],[1.4,2.2]]}
+    ],
+    attack:[
+      {name:'Galán Attack • Middle Pressure', note:'Tekan middle dan paksa lawan bertahan.', setup:[[8.5,2.6],[8.5,7.4],[16.9,2.5],[16.9,7.5],[8.8,5.0]]},
+      {name:'Galán Attack • Power Volley', note:'Kuasai net dan dorong lawan ke belakang.', setup:[[8.2,2.6],[8.2,7.4],[16.6,2.5],[16.6,7.5],[8.4,4.6]]}
+    ]
+  },
+  chingotto:{
+    defend:[
+      {name:'Chingotto Defend • Compact', note:'Pasangan rapat, sabar, dan cari bola aman.', setup:[[2.1,3.1],[2.1,6.9],[13.6,2.8],[13.6,7.2],[2.8,4.6]]},
+      {name:'Chingotto Defend • High Percentage', note:'Utamakan bola aman lalu rebut net perlahan.', setup:[[2.0,2.7],[2.0,7.3],[13.8,2.6],[13.8,7.4],[2.7,6.1]]}
+    ],
+    attack:[
+      {name:'Chingotto Attack • Chiquita', note:'Bola rendah ke kaki lawan, lalu maju kompak.', setup:[[6.1,3.0],[6.1,7.0],[13.4,2.8],[13.4,7.2],[6.3,4.2]]},
+      {name:'Chingotto Attack • Patient Net', note:'Net pressure sabar sambil tutup middle.', setup:[[8.1,3.1],[8.1,6.9],[16.0,2.8],[16.0,7.2],[8.4,5.0]]}
+    ]
+  },
+  balanced:{
+    defend:[
+      {name:'Balanced Defend • Lob Recover', note:'Lob, recover, lalu masuk net.', setup:[[2.2,2.5],[2.2,7.5],[13.8,2.7],[13.8,7.3],[2.8,5.0]]}
+    ],
+    attack:[
+      {name:'Balanced Attack • Net Pressure', note:'Pattern pro seimbang antara middle dan angle.', setup:[[8.3,2.8],[8.3,7.2],[16.7,2.6],[16.7,7.4],[8.7,5.0]]}
+    ]
+  }
+};
+
+const STYLE_PROFILE = {
+  tapia:{attackBias:.76,bounceBias:.55,lobBias:.28,chiquitaBias:.15,angleBias:.58,middleBias:.22},
+  galan:{attackBias:.70,bounceBias:.28,lobBias:.35,chiquitaBias:.10,angleBias:.25,middleBias:.55},
+  chingotto:{attackBias:.54,bounceBias:.22,lobBias:.34,chiquitaBias:.42,angleBias:.18,middleBias:.48},
+  balanced:{attackBias:.62,bounceBias:.33,lobBias:.32,chiquitaBias:.20,angleBias:.30,middleBias:.42}
+};
+
+function rand(min,max){ return min + Math.random()*(max-min); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function metersOfPoint(px){ return {x:xToM(px.x), y:yToM(px.y)}; }
+function playerById(id){ return state.players.find(p=>p.id===id); }
+function playerIds(side){ return side==='blue' ? ['B1','B2'] : ['R1','R2']; }
+function sideBaseX(side, phase){
+  if(side==='blue') return phase==='attack' ? 8.8 : phase==='transition' ? 6.3 : 2.3;
+  return phase==='attack' ? 11.2 : phase==='transition' ? 13.7 : 17.7;
+}
+function safeY(y){ return clamp(y,1.0,9.0); }
+function safeX(x){ return clamp(x,0.7,19.3); }
+function targetZoneX(side, shortBall=false){
+  if(side==='blue') return shortBall ? rand(7.5,9.0) : rand(1.3,2.6);
+  return shortBall ? rand(11.0,12.5) : rand(17.4,18.7);
+}
+function opponentOf(side){ return side==='blue' ? 'red' : 'blue'; }
+
+function chooseSeed(style, mode, forceNew=false){
+  const list = AI_SEEDS[style][mode];
+  let seed = pick(list);
+  if(forceNew && aiLastPlan && list.length>1){
+    let guard=0;
+    while(seed.name===aiLastPlan.name && guard++<10) seed=pick(list);
+  }
+  aiLastPlan = seed;
+  return seed;
+}
+
+function setStateFromSeed(seed){
+  state = initial();
+  const [B1,B2,R1,R2]=state.players;
+  const s = seed.setup;
+  Object.assign(B1,{x:mToX(s[0][0]), y:mToY(s[0][1]), path:[]});
+  Object.assign(B2,{x:mToX(s[1][0]), y:mToY(s[1][1]), path:[]});
+  Object.assign(R1,{x:mToX(s[2][0]), y:mToY(s[2][1]), path:[]});
+  Object.assign(R2,{x:mToX(s[3][0]), y:mToY(s[3][1]), path:[]});
+  Object.assign(state.ball,{x:mToX(s[4][0]), y:mToY(s[4][1]), path:[], bounceInfo:[]});
+  clearMotion();
+  selected=null;
+  draw(); updateSelection();
+}
+
+function loadAiPlan(forceNew=false){
+  if(aiResetTimer){ clearTimeout(aiResetTimer); aiResetTimer=null; }
+  const style=document.getElementById('aiStyle').value;
+  aiPreparedSeed = chooseSeed(style, aiMode, forceNew);
+  setStateFromSeed(aiPreparedSeed);
+  aiRunning=false; aiRally=null; playing=false;
+  document.getElementById('playBtn').textContent='▶ Play';
+  document.getElementById('aiPointBtn').textContent='▶ AI Mainkan 1 Rally';
+  document.getElementById('aiStatus').innerHTML=`<strong>${styleLabel(style)} • ${aiMode.toUpperCase()}</strong><br>${aiPreparedSeed.name}<br><span class="small">${aiPreparedSeed.note}</span><br><span class="small">Preview formasi awal. Saat rally dimulai, merah dan biru sama-sama bergerak mencari point.</span>`;
+}
+
+function chooseShotKind(style, attackState, isFinal){
+  const p=STYLE_PROFILE[style];
+  if(isFinal) return 'winner';
+  if(!attackState){
+    const r=Math.random();
+    if(r < p.chiquitaBias) return 'chiquita';
+    if(r < p.chiquitaBias + p.lobBias) return 'lob';
+    if(r < p.chiquitaBias + p.lobBias + p.bounceBias*0.5) return 'glass';
+    return 'reset';
+  }
+  const r=Math.random();
+  if(r < p.middleBias) return 'middle';
+  if(r < p.middleBias + p.angleBias) return 'angle';
+  if(r < p.middleBias + p.angleBias + p.bounceBias*0.35) return 'glass';
+  return 'pressure';
+}
+
+function chooseBallTargetMeters(style, hitter, shotKind, isFinal, ballM){
+  const receiver = opponentOf(hitter);
+  const towardsRed = receiver==='red';
+  let x=0, y=5;
+  if(shotKind==='lob'){
+    x = towardsRed ? rand(17.0,18.8) : rand(1.2,3.0);
+    y = Math.random()<0.5 ? rand(1.4,3.5) : rand(6.5,8.6);
+  } else if(shotKind==='chiquita'){
+    x = towardsRed ? rand(10.8,12.0) : rand(8.0,9.2);
+    y = clamp(ballM.y + rand(-1.2,1.2), 2.0, 8.0);
+  } else if(shotKind==='middle' || shotKind==='pressure' || shotKind==='reset'){
+    x = towardsRed ? rand(13.5,17.2) : rand(2.8,6.5);
+    y = shotKind==='middle' ? rand(4.2,5.8) : clamp(ballM.y + rand(-2.0,2.0), 1.3, 8.7);
+  } else if(shotKind==='angle'){
+    x = towardsRed ? rand(14.0,18.6) : rand(1.4,6.0);
+    y = Math.random()<0.5 ? rand(-1.5,0.3) : rand(9.7,11.4);
+  } else if(shotKind==='glass'){
+    if(Math.random()<0.6){
+      x = towardsRed ? rand(20.4,22.0) : rand(-2.0,-0.4);
+      y = Math.random()<0.5 ? rand(1.2,3.0) : rand(7.0,8.8);
+    } else {
+      x = towardsRed ? rand(14.0,18.0) : rand(2.0,6.0);
+      y = Math.random()<0.5 ? rand(-1.6,0.2) : rand(9.8,11.6);
+    }
+  } else if(shotKind==='winner'){
+    const killer=Math.random();
+    if(style==='galan' && killer<0.55){
+      x = towardsRed ? rand(16.5,18.8) : rand(1.2,3.4);
+      y = rand(4.4,5.6);
+    } else if(style==='chingotto' && killer<0.55){
+      x = towardsRed ? rand(10.7,11.8) : rand(8.2,9.3);
+      y = clamp(ballM.y + rand(-1.0,1.0), 2.5, 7.5);
+    } else {
+      x = towardsRed ? rand(20.6,22.4) : rand(-2.4,-0.6);
+      y = Math.random()<0.5 ? rand(0.8,2.0) : rand(8.0,9.2);
+    }
+  }
+  return {x,y};
+}
+
+function predictReflectedEndMeters(startM,targetM,maxBounces=4){
+  let x=startM.x, y=startM.y;
+  let dx=targetM.x-startM.x, dy=targetM.y-startM.y;
+  let total=Math.hypot(dx,dy);
+  if(total<0.001) return {x,y};
+  dx/=total; dy/=total;
+  for(let i=0;i<=maxBounces;i++){
+    let tx=Infinity, ty=Infinity;
+    if(dx>EPS) tx=(20-x)/dx;
+    else if(dx<-EPS) tx=(0-x)/dx;
+    if(dy>EPS) ty=(10-y)/dy;
+    else if(dy<-EPS) ty=(0-y)/dy;
+    const tHit=Math.min(tx,ty);
+    if(!isFinite(tHit) || total<=tHit){
+      return {x:clamp(x+dx*total,0,20), y:clamp(y+dy*total,0,10)};
+    }
+    x += dx*tHit; y += dy*tHit; total -= tHit;
+    if(tx < ty) dx*=-1; else dy*=-1;
+    x += dx*0.0001; y += dy*0.0001;
+  }
+  return {x:clamp(x+dx*total,0,20), y:clamp(y+dy*total,0,10)};
+}
+
+function computePlayerTargets(hitter, shotKind, ballM, endM){
+  const receiver = opponentOf(hitter);
+  const idsH = playerIds(hitter);
+  const idsR = playerIds(receiver);
+  const lowShot = ballM.y <= 5;
+  const striker = hitter==='blue' ? (lowShot ? 'B1' : 'B2') : (lowShot ? 'R1' : 'R2');
+  const partner = idsH.find(id=>id!==striker);
+  const receiveLow = endM.y <= 5;
+  const chaser = receiver==='blue' ? (receiveLow ? 'B1' : 'B2') : (receiveLow ? 'R1' : 'R2');
+  const cover = idsR.find(id=>id!==chaser);
+
+  const attackLike = ['middle','pressure','angle','winner'].includes(shotKind);
+  const hitterPhase = attackLike ? 'attack' : 'transition';
+  const receiverShort = ['chiquita'].includes(shotKind) || (receiver==='blue' ? endM.x>7.2 : endM.x<12.8);
+  const receiverPhase = receiverShort ? 'attack' : 'defend';
+
+  const hx = sideBaseX(hitter, hitterPhase);
+  const rx = sideBaseX(receiver, receiverPhase);
+
+  const strikerTarget = {x: safeX(hx + rand(-0.4,0.4)), y: safeY(ballM.y + rand(-0.5,0.5))};
+  const partnerTarget = {x: safeX(hx + (hitter==='blue' ? -0.2 : 0.2)), y: safeY(striker===idsH[0] ? strikerTarget.y + rand(2.7,3.5) : strikerTarget.y - rand(2.7,3.5))};
+
+  const chaserTarget = {x: safeX(receiver==='blue' ? (receiverShort ? rand(7.6,8.9) : rx) : (receiverShort ? rand(11.1,12.4) : rx)), y: safeY(endM.y + rand(-0.35,0.35))};
+  const coverTarget = {x: safeX(receiver==='blue' ? chaserTarget.x - rand(0.0,0.8) : chaserTarget.x + rand(0.0,0.8)), y: safeY(chaser===idsR[0] ? chaserTarget.y + rand(2.5,3.3) : chaserTarget.y - rand(2.5,3.3))};
+
+  const targets={};
+  targets[striker]=[strikerTarget.x,strikerTarget.y];
+  targets[partner]=[partnerTarget.x,partnerTarget.y];
+  targets[chaser]=[chaserTarget.x,chaserTarget.y];
+  targets[cover]=[coverTarget.x,coverTarget.y];
+  return {targets,striker,partner,chaser,cover};
+}
+
+function pickBounceWall(shotKind, hitter, desiredEnd, isFinal){
+  const receiver = opponentOf(hitter);
+  if(shotKind==='glass'){
+    if(Math.random()<0.55) return receiver==='red' ? 'right' : 'left';
+    return desiredEnd.y >= 5 ? 'top' : 'bottom';
+  }
+  if(shotKind==='angle') return desiredEnd.y >= 5 ? 'top' : 'bottom';
+  if(shotKind==='winner' && isFinal && Math.random()<0.45){
+    if(Math.random()<0.5) return receiver==='red' ? 'right' : 'left';
+    return desiredEnd.y >= 5 ? 'top' : 'bottom';
+  }
+  return null;
+}
+
+function mirrorAcrossWall(point, wall){
+  if(wall==='left') return {x:-point.x, y:point.y};
+  if(wall==='right') return {x:40-point.x, y:point.y};
+  if(wall==='top') return {x:point.x, y:20-point.y};
+  if(wall==='bottom') return {x:point.x, y:-point.y};
+  return {x:point.x, y:point.y};
+}
+
+function buildShotToPlayer(hitter, shotKind, desiredEnd, isFinal){
+  const wall = pickBounceWall(shotKind, hitter, desiredEnd, isFinal);
+  const virtualTarget = mirrorAcrossWall(desiredEnd, wall);
+  return {wall, virtualTarget};
+}
+
+function shotText(style, shotKind, hitter, isFinal, chaserId){
+  const side = hitter==='blue' ? 'Biru' : 'Merah';
+  const target = chaserId ? ` menuju ${chaserId}` : '';
+  const map={
+    lob:'lob dalam', glass:'memakai kaca', middle:'menekan middle', pressure:'menekan volley',
+    chiquita:'memainkan chiquita', angle:'membuka angle', reset:'reset rally', winner:'mencari winner'
+  };
+  const base = `${side} ${map[shotKind] || 'memukul bola'}${target}`;
+  if(isFinal) return `${base} dan mendapatkan point.`;
+  return `${base}; lawan mengejar bola dan rally berlanjut.`;
+}
+
+function generateAiRally(style, mode){
+  const seed = aiPreparedSeed || chooseSeed(style, mode, true);
+  setStateFromSeed(seed);
+  const shots=[];
+  let ballM={x:seed.setup[4][0], y:seed.setup[4][1]};
+  let blueAttack=(mode==='attack');
+  let redAttack=!blueAttack;
+  let hitter=blueAttack ? 'blue' : 'red';
+  let winner=Math.random() < (mode==='attack' ? 0.58 : 0.48) ? 'blue' : 'red';
+  let rallyLen=5 + Math.floor(Math.random()*3);
+
+  for(let i=0;i<rallyLen;i++){
+    let isFinal=(i===rallyLen-1);
+    if(isFinal && hitter!==winner){ rallyLen++; isFinal=false; }
+    const attackState = hitter==='blue' ? blueAttack : redAttack;
+    const kind = chooseShotKind(style, attackState, isFinal);
+    const roughTarget = chooseBallTargetMeters(style, hitter, kind, isFinal, ballM);
+    const roughEnd = predictReflectedEndMeters(ballM, roughTarget, 4);
+    const movePlan = computePlayerTargets(hitter, kind, ballM, roughEnd);
+    const desiredEnd = {x:movePlan.targets[movePlan.chaser][0], y:movePlan.targets[movePlan.chaser][1]};
+    const routePlan = buildShotToPlayer(hitter, kind, desiredEnd, isFinal);
+    shots.push({
+      hitter, kind, isFinal,
+      ballTarget:routePlan.virtualTarget,
+      endM:desiredEnd,
+      chaser:movePlan.chaser,
+      wall:routePlan.wall,
+      playerTargets:movePlan.targets,
+      text:shotText(style, kind, hitter, isFinal, movePlan.chaser)
+    });
+
+    if(kind==='lob' || kind==='chiquita' || kind==='pressure' || kind==='angle' || kind==='winner'){
+      if(hitter==='blue'){ blueAttack=true; redAttack=false; }
+      else { redAttack=true; blueAttack=false; }
+    }
+    ballM=desiredEnd;
+    hitter=opponentOf(hitter);
+  }
+
+  return {style, mode, seed, shots, currentShot:0, winner};
+}
+
+function setPlayerPathsForShot(shot){
+  for(const p of state.players){
+    const t=shot.playerTargets[p.id];
+    p.path = t ? [{x:mToX(t[0]), y:mToY(t[1])}] : [];
+  }
+}
+
+function updateAiPanelScore(){
+  const b=document.getElementById('blueScore');
+  const r=document.getElementById('redScore');
+  if(b) b.textContent=aiMatchScore.blue;
+  if(r) r.textContent=aiMatchScore.red;
+}
+
+function startAiShot(index){
+  if(!aiRunning || !aiRally) return;
+  aiRally.currentShot=index;
+  const shot=aiRally.shots[index];
+  clearMotion();
+  setPlayerPathsForShot(shot);
+  const targetPx={x:mToX(shot.ballTarget.x), y:mToY(shot.ballTarget.y)};
+  const route=buildBallReboundPath({x:state.ball.x,y:state.ball.y}, targetPx, 4);
+  state.ball.path=route.path;
+  state.ball.bounceInfo=route.bounceInfo;
+  const status=document.getElementById('aiStatus');
+  const wallTxt = shot.wall ? ` via kaca ${shot.wall}` : ' langsung ke pemain';
+  status.innerHTML=`<strong>${styleLabel(aiRally.style)} • ${aiMode.toUpperCase()}</strong><br>${aiRally.seed.name}<br><span class="small">Rally ${index+1}/${aiRally.shots.length}: ${shot.text} (${shot.chaser}${wallTxt})</span>`;
+  draw(); updateSelection();
+  playing=true; tPrev=0;
+  document.getElementById('playBtn').textContent='⏸ Pause';
+  document.getElementById('aiPointBtn').textContent='AI sedang rally…';
+  requestAnimationFrame(animate);
+}
+
+function showPointFlash(text){
+  const f=document.getElementById('pointFlash');
+  f.textContent=text; f.style.opacity='1';
+  setTimeout(()=>f.style.opacity='0',850);
+}
+
+function runAiPoint(){
+  if(aiRunning) return;
+  if(aiResetTimer){ clearTimeout(aiResetTimer); aiResetTimer=null; }
+  const style=document.getElementById('aiStyle').value;
+  aiRally = generateAiRally(style, aiMode);
+  aiRunning=true;
+  startAiShot(0);
+}
+
+function onAiShotComplete(){
+  if(!aiRunning || !aiRally) return;
+  if(aiRally.currentShot < aiRally.shots.length-1){
+    startAiShot(aiRally.currentShot+1);
+  } else {
+    finishAiPoint();
+  }
+}
+
+function finishAiPoint(){
+  if(!aiRunning || !aiRally) return;
+  const winner=aiRally.winner;
+  aiRunning=false;
+  playing=false;
+  aiPointCount++;
+  aiMatchScore[winner]++;
+  document.getElementById('aiPointCount').textContent=aiPointCount;
+  updateAiPanelScore();
+  document.getElementById('playBtn').textContent='▶ Play';
+  document.getElementById('aiPointBtn').textContent='▶ AI Mainkan 1 Rally';
+  const side = winner==='blue' ? 'BIRU' : 'MERAH';
+  showPointFlash(`POINT ${side} • RESET`);
+  const status=document.getElementById('aiStatus');
+  status.innerHTML=`<strong>Point selesai.</strong><br><span class="small">${side} memenangkan rally ini. Skor simulasi sekarang Biru ${aiMatchScore.blue} – Merah ${aiMatchScore.red}. Reset otomatis…</span>`;
+  aiResetTimer=setTimeout(()=>{
+    state=initial(); clearMotion(); selected=null; draw(); updateSelection();
+    status.innerHTML=`<strong>Point ${aiPointCount} selesai.</strong><br><span class="small">Skor simulasi: Biru ${aiMatchScore.blue} – Merah ${aiMatchScore.red}. Pilih mode atau tekan “AI Mainkan 1 Rally” lagi.</span>`;
+    aiRally=null; aiResetTimer=null;
+  },1300);
+}
+
+function updateAiStatus(){
+  const style=document.getElementById('aiStyle').value;
+  document.getElementById('aiStatus').innerHTML=`<strong>${styleLabel(style)} • ${aiMode.toUpperCase()}</strong><br><span class="small">Tekan “AI Mainkan 1 Rally” untuk simulasi satu point penuh. Bola kuning akan diarahkan sampai mengenai pemain lawan yang mengejar bola.</span>`;
+}
+
+function setAiStyle(style){
+  const select=document.getElementById('aiStyle');
+  select.value=style;
+  aiLastPlan=null;
+  aiPreparedSeed=null;
+  document.querySelectorAll('.styleBtn').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.style===style);
+  });
+  updateAiStatus();
+}
+document.querySelectorAll('.styleBtn').forEach(btn=>{
+  btn.addEventListener('click',()=>setAiStyle(btn.dataset.style));
+});
+
+document.getElementById('aiDefendBtn').onclick=()=>setAiMode('defend');
+document.getElementById('aiAttackBtn').onclick=()=>setAiMode('attack');
+document.getElementById('aiStyle').onchange=()=>{ aiLastPlan=null; aiPreparedSeed=null; updateAiStatus(); };
+document.getElementById('aiPointBtn').onclick=runAiPoint;
+document.getElementById('aiNextBtn').onclick=()=>{ aiPreparedSeed=null; loadAiPlan(true); };
+
+
+function applyPreset(name){
+  reset();
+  const [B1,B2,R1,R2]=state.players;
+  if(name==='defense'){
+    Object.assign(B1,{x:mToX(2.2),y:mToY(2.0),path:[{x:mToX(6.0),y:mToY(2.4)},{x:mToX(8.2),y:mToY(2.8)}]});
+    Object.assign(B2,{x:mToX(2.2),y:mToY(8.0),path:[{x:mToX(6.0),y:mToY(7.6)},{x:mToX(8.2),y:mToY(7.2)}]});
+    Object.assign(R1,{x:mToX(14.2),y:mToY(2.6)});
+    Object.assign(R2,{x:mToX(14.2),y:mToY(7.4)});
+    Object.assign(state.ball,{x:mToX(2.4),y:mToY(5.0)});
+    const shot = buildBallReboundPath({x:state.ball.x,y:state.ball.y}, {x:R2.x,y:R2.y}, 3);
+    state.ball.path=shot.path; state.ball.bounceInfo=shot.bounceInfo;
+  } else if(name==='attack'){
+    Object.assign(B1,{x:mToX(8.6),y:mToY(2.5),path:[{x:mToX(9.4),y:mToY(2.7)}]});
+    Object.assign(B2,{x:mToX(8.6),y:mToY(7.5),path:[{x:mToX(9.4),y:mToY(7.3)}]});
+    Object.assign(R1,{x:mToX(17.1),y:mToY(2.3)});
+    Object.assign(R2,{x:mToX(17.1),y:mToY(7.7)});
+    Object.assign(state.ball,{x:mToX(8.8),y:mToY(5.0)});
+    const shot = buildBallReboundPath({x:state.ball.x,y:state.ball.y}, {x:R1.x,y:R1.y}, 3);
+    state.ball.path=shot.path; state.ball.bounceInfo=shot.bounceInfo;
+  } else if(name==='bajada'){
+    Object.assign(B1,{x:mToX(2.3),y:mToY(2.2),path:[{x:mToX(5.6),y:mToY(3.2)}]});
+    Object.assign(B2,{x:mToX(8.8),y:mToY(7.3),path:[{x:mToX(7.0),y:mToY(5.8)}]});
+    Object.assign(R1,{x:mToX(14.1),y:mToY(2.6)});
+    Object.assign(R2,{x:mToX(14.0),y:mToY(7.4)});
+    Object.assign(state.ball,{x:mToX(3.6),y:mToY(1.6)});
+    const shot = buildBallReboundPath({x:state.ball.x,y:state.ball.y}, {x:mToX(40-xToM(R2.x)),y:R2.y}, 3);
+    state.ball.path=shot.path; state.ball.bounceInfo=shot.bounceInfo;
+  } else if(name==='chiquita'){
+    Object.assign(B1,{x:mToX(2.8),y:mToY(2.5),path:[{x:mToX(6.8),y:mToY(2.8)},{x:mToX(8.8),y:mToY(2.8)}]});
+    Object.assign(B2,{x:mToX(2.8),y:mToY(7.5),path:[{x:mToX(6.8),y:mToY(7.2)},{x:mToX(8.8),y:mToY(7.2)}]});
+    Object.assign(R1,{x:mToX(13.5),y:mToY(3.0)});
+    Object.assign(R2,{x:mToX(13.5),y:mToY(7.0)});
+    Object.assign(state.ball,{x:mToX(5.5),y:mToY(5.0)});
+    const shot = buildBallReboundPath({x:state.ball.x,y:state.ball.y}, {x:R1.x,y:R1.y}, 3);
+    state.ball.path=shot.path; state.ball.bounceInfo=shot.bounceInfo;
+  }
+  selected=null; draw(); updateSelection();
+}
+document.getElementById('applyPreset').onclick=()=>applyPreset(document.getElementById('preset').value);
+
+
+function animate(ts){
+  if(!playing) return;
+  const dt=Math.min(32, ts-tPrev || 16)/16.67 * speed; tPrev=ts;
+  let any=false;
+
+  // Players keep moving normally.
+  for(const p of state.players){
+    if(!p.path.length) continue;
+    const q=p.path[0], dx=q.x-p.x, dy=q.y-p.y, d=Math.hypot(dx,dy);
+    const step=5.8*dt;
+    if(d<=step){ p.x=q.x; p.y=q.y; p.path.shift(); }
+    else { p.x += dx/d*step; p.y += dy/d*step; }
+    any=true;
+  }
+
+  // Ball trajectory: main shot first, then manual return if one exists.
+  if(state.ball.path.length){
+    const q=state.ball.path[0];
+    const dx=q.x-state.ball.x, dy=q.y-state.ball.y, d=Math.hypot(dx,dy);
+    const step=18*dt;
+    if(d<=step){ state.ball.x=q.x; state.ball.y=q.y; state.ball.path.shift(); }
+    else { state.ball.x += dx/d*step; state.ball.y += dy/d*step; }
+    any=true;
+  } else if(!aiRunning && manualBallPhase==='main' && state.ball.nextPath && state.ball.nextPath.length){
+    // Continue automatically from the receiving player to the manually chosen return.
+    state.ball.path=state.ball.nextPath.map(q=>({x:q.x,y:q.y}));
+    state.ball.bounceInfo=(state.ball.nextBounceInfo||[]).map(b=>({...b}));
+    state.ball.nextPath=[];
+    state.ball.nextBounceInfo=[];
+    manualBallPhase='return';
+    any=true;
+  }
+
+  draw(); updateSelection();
+
+  if(any){
+    requestAnimationFrame(animate);
+  } else {
+    playing=false;
+    document.getElementById('playBtn').textContent='▶ Play';
+
+    if(aiRunning){
+      onAiShotComplete();
+    } else {
+      // Show exactly where the final ball finishes.
+      state.ball.landingPoint={x:state.ball.x,y:state.ball.y};
+      manualBallPhase='main';
+      draw(); updateSelection();
+    }
+  }
+}
+document.getElementById('playBtn').onclick=()=>{
+  if(playing){
+    playing=false;
+    document.getElementById('playBtn').textContent='▶ Play';
+    return;
+  }
+  state.ball.landingPoint=null;
+  if(aiRunning){
+    playing=true; tPrev=0; document.getElementById('playBtn').textContent='⏸ Pause'; requestAnimationFrame(animate); return;
+  }
+  playing=true; tPrev=0; document.getElementById('playBtn').textContent='⏸ Pause'; requestAnimationFrame(animate);
+};
+
+applyPreset('bajada');
+updateAiPanelScore();
+loadAiPlan(false);
+setAiStyle(document.getElementById('aiStyle').value);
+updateAiStatus();
+</script>
+
+</body>
+</html>
