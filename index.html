@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JPPC — Jenggala Pingpong Padel Club</title>
+  <meta name="description" content="JPPC — Play Together. Stay Together.">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<header class="nav-wrap">
+  <div class="container nav">
+    <a href="#home" class="brand">
+      <img id="siteLogo" class="logo" alt="JPPC">
+      <div><b id="brandName">JPPC</b><small id="brandSub">JENGGALA PINGPONG PADEL CLUB</small></div>
+    </a>
+    <nav id="mainNav">
+      <a href="#home">Home</a><a href="#about">About</a><a href="#sports">Sports</a>
+      <a href="#events">Events</a><a href="#members">Members</a><a href="#rankings">Rankings</a>
+      <a href="#gallery">Gallery</a><a href="#contact">Contact</a>
+    </nav>
+    <button id="adminBtn" class="btn ghost">Admin</button>
+  </div>
+</header>
+
+<main>
+<section id="home" class="hero">
+  <div id="heroBg" class="hero-bg"></div>
+  <div class="container hero-inner reveal">
+    <span class="kicker" id="heroKicker">PLAY · SPORT · SOCIAL · TOGETHER</span>
+    <h1><span id="heroLine1">PLAY TOGETHER.</span><br><em id="heroLine2">STAY TOGETHER.</em></h1>
+    <p id="heroText">JPPC adalah komunitas pingpong, padel, mahjong, dan persahabatan.</p>
+    <div class="actions"><a class="btn red" href="#about">Our Story</a><a class="btn blue" href="#events">Upcoming Events</a></div>
+    <div class="stats">
+      <div><b id="statMembers">0</b><span>Members</span></div>
+      <div><b id="statSessions">0</b><span>Sessions</span></div>
+      <div><b>EST.</b><span id="estYear">2024</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="about"><div class="container">
+  <div class="section-head reveal"><div><span class="kicker">OUR STORY</span><h2>More than a club.</h2></div><p id="aboutIntro"></p></div>
+  <div class="about-grid">
+    <article class="panel quote reveal" id="aboutQuote"></article>
+    <article class="panel reveal"><p id="aboutBody"></p><div class="values"><span>Friendship First</span><span>Healthy Competition</span><span>Good Vibes</span><span>Lifelong Games</span></div></article>
+  </div>
+</div></section>
+
+<section id="sports"><div class="container">
+  <div class="section-head reveal"><div><span class="kicker">THE GAMES</span><h2>Play. Move. Connect.</h2></div></div>
+  <div class="sports-grid" id="sportsGrid"></div>
+</div></section>
+
+<section id="events"><div class="container">
+  <div class="section-head reveal"><div><span class="kicker">UPCOMING</span><h2>Club Events</h2></div><p>Admin dapat menambah, mengedit, dan menghapus event.</p></div>
+  <div class="card-grid" id="eventsGrid"></div>
+</div></section>
+
+<section id="members"><div class="container">
+  <div class="section-head reveal"><div><span class="kicker">THE CIRCLE</span><h2>Members</h2></div><p>Founders, members, dan guests.</p></div>
+  <div class="member-grid" id="membersGrid"></div>
+</div></section>
+
+<section id="rankings"><div class="container">
+  <div class="section-head reveal"><div><span class="kicker">COMPETITION</span><h2>JPPC Ranking</h2></div></div>
+  <div class="panel table-wrap reveal">
+    <table><thead><tr><th>#</th><th>Player</th><th>Played</th><th>W</th><th>L</th><th>Win%</th></tr></thead><tbody id="rankBody"></tbody></table>
+  </div>
+</div></section>
+
+<section id="gallery"><div class="container">
+  <div class="section-head reveal"><div><span class="kicker">PHOTO JOURNAL</span><h2>Gallery</h2></div><p>Auto-scroll, hover pause, zoom, dan lightbox.</p></div>
+  <div class="gallery-shell reveal"><div id="galleryTrack" class="gallery-track"></div></div>
+</div></section>
+
+<section id="contact"><div class="container">
+  <div class="section-head reveal"><div><span class="kicker">CONNECT</span><h2>Contact JPPC</h2></div></div>
+  <div class="contact-grid">
+    <article class="panel reveal"><h3 id="contactTitle">JPPC</h3><p id="contactText"></p><p><b>Instagram:</b> <span id="igText"></span></p></article>
+    <article class="panel reveal"><p>Private Social Sports Club</p><p>Pingpong · Padel · Mahjong · Friendship</p></article>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="container footer">© <span id="yearNow"></span> JPPC · Play Together. Stay Together.</div></footer>
+
+<div id="lightbox" class="modal"><button class="x" data-close="lightbox">×</button><img id="lightboxImg"></div>
+
+<!-- Login -->
+<div id="loginModal" class="modal">
+  <div class="modal-card narrow">
+    <button class="x" data-close="loginModal">×</button>
+    <h3>Admin Login</h3>
+    <p class="muted">Firebase Authentication — Email & Password.</p>
+    <input id="loginEmail" type="email" placeholder="admin@email.com">
+    <input id="loginPassword" type="password" placeholder="Password">
+    <button id="loginSubmit" class="btn red full">Login</button>
+    <p id="loginError" class="error"></p>
+  </div>
+</div>
+
+<!-- Admin -->
+<div id="adminModal" class="modal">
+  <div class="modal-card admin-card">
+    <div class="admin-head">
+      <div><h3>JPPC Admin</h3><small id="adminEmail"></small><small class="muted"> · build 3.1 gallery-fix</small></div>
+      <div class="row"><button id="logoutBtn" class="btn ghost">Logout</button><button class="x static" data-close="adminModal">×</button></div>
+    </div>
+    <div class="admin-layout">
+      <aside class="admin-tabs">
+        <button data-tab="site" class="active">Site</button>
+        <button data-tab="theme">Theme</button>
+        <button data-tab="assets">Images</button>
+        <button data-tab="events">Events</button>
+        <button data-tab="members">Members</button>
+        <button data-tab="rankings">Rankings</button>
+      </aside>
+      <div class="admin-content">
+        <section class="tab active" id="tab-site">
+          <h3>Site Content</h3>
+          <div class="grid2">
+            <label>Brand<input id="fBrandName"></label><label>Subtitle<input id="fBrandSub"></label>
+            <label>Established<input id="fEstYear"></label><label>Instagram<input id="fInstagram"></label>
+            <label>Sessions<input id="fStatSessions" type="number"></label>
+          </div>
+          <label>Hero Kicker<input id="fHeroKicker"></label>
+          <label>Hero Line 1<input id="fHeroLine1"></label>
+          <label>Hero Line 2<input id="fHeroLine2"></label>
+          <label>Hero Text<textarea id="fHeroText"></textarea></label>
+          <label>About Intro<textarea id="fAboutIntro"></textarea></label>
+          <label>About Quote<input id="fAboutQuote"></label>
+          <label>About Body<textarea id="fAboutBody"></textarea></label>
+          <label>Contact Title<input id="fContactTitle"></label>
+          <label>Contact Text<textarea id="fContactText"></textarea></label>
+          <button id="saveSiteBtn" class="btn red">Save Site</button>
+        </section>
+
+        <section class="tab" id="tab-theme">
+          <h3>Theme</h3>
+          <div class="grid2">
+            <label>Background<input id="cBg" type="color"></label><label>Panel<input id="cPanel" type="color"></label>
+            <label>Red<input id="cRed" type="color"></label><label>Blue<input id="cBlue" type="color"></label>
+            <label>Text<input id="cText" type="color"></label><label>Muted<input id="cMuted" type="color"></label>
+          </div>
+          <button id="saveThemeBtn" class="btn red">Save Theme</button>
+        </section>
+
+        <section class="tab" id="tab-assets">
+          <h3>Images</h3>
+          <p class="muted">Spark-friendly mode: gambar dikompres di browser lalu disimpan sebagai data di Firestore. Maksimal aman ±700 KB per gambar.</p>
+          <label>Logo<input id="logoFile" type="file" accept="image/*"></label>
+          <button class="btn blue" data-upload-asset="logo">Upload Logo</button>
+          <label>Hero Background<input id="heroFile" type="file" accept="image/*"></label>
+          <button class="btn blue" data-upload-asset="hero">Upload Hero</button>
+          <hr>
+          <div class="row between"><h4>Gallery</h4><button id="addGalleryBtn" class="btn ghost">+ Add Photo</button></div>
+          <div id="adminGalleryList"></div>
+        </section>
+
+        <section class="tab" id="tab-events">
+          <div class="row between"><h3>Events</h3><button id="addEventBtn" class="btn blue">+ Add</button></div>
+          <div id="adminEventsList"></div>
+        </section>
+
+        <section class="tab" id="tab-members">
+          <div class="row between"><h3>Members</h3><button id="addMemberBtn" class="btn blue">+ Add</button></div>
+          <div id="adminMembersList"></div>
+        </section>
+
+        <section class="tab" id="tab-rankings">
+          <div class="row between"><h3>Rankings</h3><button id="addRankingBtn" class="btn blue">+ Add</button></div>
+          <div id="adminRankingsList"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Generic editor -->
+<div id="editModal" class="modal">
+  <div class="modal-card narrow">
+    <button class="x" data-close="editModal">×</button>
+    <h3 id="editTitle">Edit</h3>
+    <div id="editFields"></div>
+    <div class="row end"><button id="deleteItemBtn" class="btn danger">Delete</button><button id="saveItemBtn" class="btn red">Save</button></div>
+  </div>
+</div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
