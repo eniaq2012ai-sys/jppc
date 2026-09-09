@@ -1,10 +1,8 @@
-// Paste the Firebase web-app configuration from:
-// Firebase Console → Project settings → Your apps → Web app → SDK setup and configuration.
 export const firebaseConfig = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "PASTE_MESSAGING_SENDER_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyA3PtCN8kNfx7MjyxMQHBz5PS2fPOLxzTo",
+  authDomain: "jppc-cea43.firebaseapp.com",
+  projectId: "jppc-cea43",
+  storageBucket: "jppc-cea43.firebasestorage.app",
+  messagingSenderId: "1093206364719",
+  appId: "1:1093206364719:web:775dc14ec75ede11ebacda"
 };
