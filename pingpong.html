@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>JPPC Pingpong</title>
+<style>
+:root{
+  --bg:#07111f;
+  --panel:#0d1b2a;
+  --table:#0b5c8f;
+  --line:#f7f9fc;
+  --accent:#ef1828;
+  --blue:#0aa8ff;
+  --text:#f7f9fc;
+  --muted:#9fb0c6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(circle at 50% 0,#102b48,#06111f 70%);color:var(--text);font-family:Inter,Arial,sans-serif;min-height:100%}
+body{padding:12px 12px 26px}
+.wrap{width:min(100%,760px);margin:auto}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  background:rgba(8,22,38,.86);border:1px solid rgba(255,255,255,.12);border-radius:18px;
+  padding:10px 12px;margin-bottom:10px
+}
+.brand b{display:block;font-size:18px}.brand small{color:var(--muted);font-size:11px}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+button,select{
+  border:1px solid rgba(255,255,255,.14);border-radius:12px;background:#12283f;color:white;
+  font-weight:800;padding:10px 12px;min-height:42px
+}
+button.primary{background:linear-gradient(135deg,var(--accent),#a60f1b)}
+.scoreboard{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
+  background:rgba(7,20,34,.78);border:1px solid rgba(255,255,255,.12);border-radius:18px;
+  padding:11px 14px;margin-bottom:10px
+}
+.score{text-align:center}.score .num{font-size:36px;font-weight:950;line-height:1}.score .name{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-top:5px}
+.centerinfo{text-align:center;color:var(--muted);font-size:12px}
+.game-shell{
+  position:relative;border-radius:24px;overflow:hidden;border:3px solid rgba(255,255,255,.12);
+  box-shadow:0 20px 60px rgba(0,0,0,.35);background:#04101b
+}
+canvas{display:block;width:100%;aspect-ratio:3/4;max-height:78vh;background:#0a1522;touch-action:none}
+.overlay{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(1,8,14,.36);pointer-events:none;opacity:0;transition:.2s
+}
+.overlay.show{opacity:1}
+.overlay-card{
+  background:rgba(5,17,30,.92);border:1px solid rgba(255,255,255,.16);border-radius:20px;
+  padding:18px 22px;text-align:center;max-width:82%
+}
+.overlay-card h2{margin:0 0 6px;font-size:28px}.overlay-card p{margin:0;color:var(--muted)}
+.tips{
+  margin-top:10px;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.1);
+  background:rgba(7,20,34,.62);color:#c8d6e5;font-size:12px;line-height:1.5
+}
+@media(max-width:520px){
+  body{padding:8px}
+  .scoreboard{gap:6px;padding:9px 10px}
+  .score .num{font-size:31px}
+  .centerinfo{font-size:10px}
+  button,select{padding:9px 10px}
+}
+
+.jp-back{position:fixed;left:10px;top:10px;z-index:9999;background:rgba(4,18,14,.9);color:white;border:1px solid rgba(255,255,255,.18);padding:9px 12px;border-radius:12px;text-decoration:none;font-weight:800;font-size:13px;backdrop-filter:blur(8px)}
+.jp-back:hover{background:rgba(11,52,40,.96)}
+</style>
+</head>
+<body>
+<a class="jp-back" href="./index.html#sports">← Back to JPPC</a>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <b>🏓 JPPC Pingpong</b>
+      <small>Arcade Prototype · Player vs Bot</small>
+    </div>
+    <div class="controls">
+      <select id="difficulty" aria-label="Difficulty">
+        <option value="easy">Easy</option>
+        <option value="normal" selected>Normal</option>
+        <option value="hard">Hard</option>
+      </select>
+      <button id="pauseBtn" type="button">Pause</button>
+      <button id="newBtn" type="button" class="primary">Game Baru</button>
+    </div>
+  </div>
+
+  <div class="scoreboard">
+    <div class="score">
+      <div id="playerScore" class="num">0</div>
+      <div class="name">Anda</div>
+    </div>
+    <div class="centerinfo">
+      <div>FIRST TO 11</div>
+      <div id="status">Tap meja untuk mulai</div>
+    </div>
+    <div class="score">
+      <div id="botScore" class="num">0</div>
+      <div class="name">Bot</div>
+    </div>
+  </div>
+
+  <div class="game-shell">
+    <canvas id="game" width="600" height="800" aria-label="Pingpong game area"></canvas>
+    <div id="overlay" class="overlay show">
+      <div class="overlay-card">
+        <h2 id="overlayTitle">JPPC Pingpong</h2>
+        <p id="overlayText">Tap meja untuk serve. Geser paddle Anda di bagian bawah.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tips">
+    <b>Kontrol:</b> sentuh/drag di area meja atau gunakan mouse. Paddle Anda mengikuti posisi horizontal jari. Bola menjadi sedikit lebih cepat setiap rally.
+  </div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scorePlayer = document.getElementById('playerScore');
+  const scoreBot = document.getElementById('botScore');
+  const statusEl = document.getElementById('status');
+  const overlay = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlayTitle');
+  const overlayText = document.getElementById('overlayText');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const newBtn = document.getElementById('newBtn');
+  const difficulty = document.getElementById('difficulty');
+
+  const W = canvas.width, H = canvas.height;
+  const table = { left: 135, right: W-135, top: 55, bottom: H-55 };
+  let running = false, paused = false, gameOver = false;
+  let playerScoreVal = 0, botScoreVal = 0;
+  let serveToPlayer = true;
+  let lastTime = performance.now();
+  let raf = 0;
+  let rally = 0;
+
+  const player = { x: W/2, y: H-80, w: 108, h: 18, targetX: W/2 };
+  const bot = { x: W/2, y: 80, w: 120, h: 18 };
+  const ball = { x: W/2, y: H/2, r: 10, vx: 0, vy: 0, speed: 420 };
+
+  const difficultySettings = {
+    easy:   { botSpeed: 300, aimError: 85, paddle: 118 },
+    normal: { botSpeed: 405, aimError: 45, paddle: 108 },
+    hard:   { botSpeed: 540, aimError: 18, paddle: 98 }
+  };
+
+  function dset(){ return difficultySettings[difficulty.value] || difficultySettings.normal; }
+
+  function resetRound() {
+    running = false;
+    rally = 0;
+    ball.x = W/2;
+    ball.y = H/2;
+    ball.vx = 0; ball.vy = 0;
+    player.x = player.targetX = W/2;
+    bot.x = W/2;
+    bot.w = dset().paddle;
+    player.w = 108;
+    statusEl.textContent = 'Tap meja untuk serve';
+    overlay.classList.add('show');
+    overlayTitle.textContent = serveToPlayer ? 'Your Serve' : 'Bot Serve';
+    overlayText.textContent = serveToPlayer ? 'Tap meja untuk mulai.' : 'Tap meja untuk menerima serve.';
+  }
+
+  function serve() {
+    if (gameOver || paused || running) return;
+    running = true;
+    overlay.classList.remove('show');
+    const dirY = serveToPlayer ? -1 : 1;
+    const angle = (Math.random()*0.9 - 0.45);
+    ball.speed = 420;
+    ball.vx = Math.sin(angle) * ball.speed;
+    ball.vy = dirY * Math.cos(angle) * ball.speed;
+    statusEl.textContent = 'Rally!';
+  }
+
+  function newGame() {
+    playerScoreVal = 0; botScoreVal = 0; gameOver = false; paused = false;
+    serveToPlayer = true;
+    pauseBtn.textContent = 'Pause';
+    updateScore();
+    resetRound();
+  }
+
+  function updateScore(){
+    scorePlayer.textContent = playerScoreVal;
+    scoreBot.textContent = botScoreVal;
+  }
+
+  function endPoint(playerWon){
+    running = false;
+    if(playerWon) playerScoreVal++; else botScoreVal++;
+    updateScore();
+    if(playerScoreVal >= 11 || botScoreVal >= 11){
+      gameOver = true;
+      const won = playerScoreVal > botScoreVal;
+      statusEl.textContent = won ? 'Anda menang!' : 'Bot menang';
+      overlay.classList.add('show');
+      overlayTitle.textContent = won ? '🏆 Anda Menang!' : 'Game Over';
+      overlayText.textContent = `Skor akhir ${playerScoreVal} - ${botScoreVal}. Tekan Game Baru untuk bermain lagi.`;
+      return;
+    }
+    serveToPlayer = !playerWon;
+    setTimeout(resetRound, 450);
+  }
+
+  function paddleCollision(p, isPlayer){
+    const withinY = isPlayer
+      ? (ball.y + ball.r >= p.y - p.h/2 && ball.y - ball.r <= p.y + p.h/2 && ball.vy > 0)
+      : (ball.y - ball.r <= p.y + p.h/2 && ball.y + ball.r >= p.y - p.h/2 && ball.vy < 0);
+    const withinX = ball.x >= p.x - p.w/2 - ball.r && ball.x <= p.x + p.w/2 + ball.r;
+    if(!withinY || !withinX) return false;
+
+    const offset = Math.max(-1, Math.min(1, (ball.x - p.x)/(p.w/2)));
+    rally++;
+    ball.speed = Math.min(760, 420 + rally*16);
+    const maxAngle = 1.02;
+    const angle = offset * maxAngle;
+    ball.vx = Math.sin(angle) * ball.speed;
+    ball.vy = (isPlayer ? -1 : 1) * Math.cos(angle) * ball.speed;
+    ball.y = isPlayer ? p.y - p.h/2 - ball.r - 1 : p.y + p.h/2 + ball.r + 1;
+    return true;
+  }
+
+  function update(dt){
+    if(!running || paused || gameOver) return;
+
+    const follow = Math.min(1, dt*12);
+    player.x += (player.targetX - player.x)*follow;
+    player.x = Math.max(table.left+player.w/2, Math.min(table.right-player.w/2, player.x));
+
+    const ds = dset();
+    const predicted = ball.x + (Math.random()*2-1)*ds.aimError;
+    const maxMove = ds.botSpeed*dt;
+    const delta = predicted - bot.x;
+    bot.x += Math.max(-maxMove, Math.min(maxMove, delta));
+    bot.x = Math.max(table.left+bot.w/2, Math.min(table.right-bot.w/2, bot.x));
+
+    ball.x += ball.vx*dt;
+    ball.y += ball.vy*dt;
+
+    if(ball.x - ball.r <= table.left){
+      ball.x = table.left + ball.r;
+      ball.vx = Math.abs(ball.vx);
+    }
+    if(ball.x + ball.r >= table.right){
+      ball.x = table.right - ball.r;
+      ball.vx = -Math.abs(ball.vx);
+    }
+
+    paddleCollision(player, true);
+    paddleCollision(bot, false);
+
+    if(ball.y > H + 35) endPoint(false);
+    else if(ball.y < -35) endPoint(true);
+  }
+
+  function drawRoundedRect(x,y,w,h,r,fill){
+    ctx.beginPath();
+    ctx.roundRect(x,y,w,h,r);
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // outer floor / room
+    const bg = ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#14283b');
+    bg.addColorStop(1,'#09131d');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,W,H);
+
+    // table shadow
+    ctx.shadowColor='rgba(0,0,0,.35)';
+    ctx.shadowBlur=18;
+    drawRoundedRect(table.left, table.top, table.right-table.left, table.bottom-table.top, 16, '#0a4f7b');
+    ctx.shadowBlur=0;
+
+    // table surface
+    const grd = ctx.createLinearGradient(table.left,table.top,table.left,table.bottom);
+    grd.addColorStop(0,'#1177b0');
+    grd.addColorStop(1,'#0a6699');
+    drawRoundedRect(table.left, table.top, table.right-table.left, table.bottom-table.top, 16, grd);
+
+    // center line
+    ctx.beginPath();
+    ctx.moveTo(W/2,table.top+10);
+    ctx.lineTo(W/2,table.bottom-10);
+    ctx.strokeStyle = 'rgba(255,255,255,.75)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // side and end lines
+    ctx.strokeStyle = 'rgba(255,255,255,.96)';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(table.left,table.top,table.right-table.left,table.bottom-table.top);
+
+    // net
+    ctx.fillStyle = '#eef3f8';
+    ctx.fillRect(table.left-3, H/2-4, table.right-table.left+6, 8);
+    ctx.fillStyle = 'rgba(20,20,20,.45)';
+    ctx.fillRect(table.left-2, H/2+4, table.right-table.left+4, 6);
+
+    // paddles
+    drawRoundedRect(player.x-player.w/2, player.y-player.h/2, player.w, player.h, 9, '#ef1828');
+    drawRoundedRect(bot.x-bot.w/2, bot.y-bot.h/2, bot.w, bot.h, 9, '#f3f7fb');
+
+    // ball
+    ctx.beginPath();
+    ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);
+    ctx.fillStyle='#ff8a3d';
+    ctx.shadowColor='rgba(0,0,0,.35)';
+    ctx.shadowBlur=8;
+    ctx.fill();
+    ctx.shadowBlur=0;
+
+    // labels
+    ctx.fillStyle='rgba(255,255,255,.66)';
+    ctx.font='bold 15px Arial';
+    ctx.textAlign='center';
+    ctx.fillText('BOT', W/2, 34);
+    ctx.fillText('ANDA', W/2, H-16);
+  }
+
+  function loop(now){
+    const dt = Math.min(.025, (now-lastTime)/1000);
+    lastTime = now;
+    update(dt);
+    draw();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function pointerToCanvasX(e){
+    const rect = canvas.getBoundingClientRect();
+    return (e.clientX - rect.left) * (W/rect.width);
+  }
+
+  canvas.addEventListener('pointerdown', e=>{
+    canvas.setPointerCapture?.(e.pointerId);
+    player.targetX = pointerToCanvasX(e);
+    if(!running) serve();
+  });
+  canvas.addEventListener('pointermove', e=>{
+    if(e.buttons || e.pointerType==='touch') player.targetX = pointerToCanvasX(e);
+  });
+
+  pauseBtn.addEventListener('click', ()=>{
+    if(gameOver) return;
+    paused = !paused;
+    pauseBtn.textContent = paused ? 'Lanjut' : 'Pause';
+    statusEl.textContent = paused ? 'Paused' : (running ? 'Rally!' : 'Tap meja untuk serve');
+    if(paused){
+      overlay.classList.add('show');
+      overlayTitle.textContent='Paused';
+      overlayText.textContent='Tekan Lanjut untuk melanjutkan permainan.';
+    }else if(running){
+      overlay.classList.remove('show');
+    }else{
+      overlay.classList.add('show');
+    }
+  });
+
+  newBtn.addEventListener('click', newGame);
+  difficulty.addEventListener('change', ()=>{
+    bot.w = dset().paddle;
+    if(!running) resetRound();
+  });
+
+  newGame();
+  cancelAnimationFrame(raf);
+  lastTime = performance.now();
+  raf = requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
